@@ -1,5 +1,6 @@
-// Update with your config settings.
+require("dotenv").config();
 
+// Update with your config settings.
 /**
  * @type { Object.<string, import("knex").Knex.Config> }
  */
@@ -9,7 +10,7 @@ module.exports = {
     connection: {
       host: "127.0.0.1",
       user: "root",
-      password: "rootroot",
+      password: process.env.DB_PASSWORD,
       database: "sxlab",
       charset: "utf8",
     },
