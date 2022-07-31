@@ -23,9 +23,8 @@ exports.up = function (knex) {
       table.timestamp("updated_at").defaultTo(knex.fn.now());
     })
     .createTable("markets", (table) => {
-      table.increments("id").primary();
       table.string("status");
-      table.string("marketHash").notNullable().unique();
+      table.string("marketHash").primary();
       table.string("teamOneName");
       table.string("teamTwoName");
       table.string("outcomeOneName");
@@ -85,7 +84,7 @@ exports.up = function (knex) {
         .references("baseToken")
         .inTable("tokens")
         .onUpdate("CASCADE");
-      table.string("bettor").notNullable();
+      table.string("bettor").notNullable().index();
       table.double("stake", 30, 0).notNullable();
       table.double("odds", 30, 0).notNullable();
       table.string("orderHash");
@@ -115,10 +114,10 @@ exports.up = function (knex) {
  */
 exports.down = function (knex) {
   return knex.schema
-    .dropTable("bets")
-    .dropTable("markets")
-    .dropTable("leagues")
-    .dropTable("sports")
-    .dropTable("crypto_prices")
-    .dropTable("tokens");
+    .dropTableIfExists("bets")
+    .dropTableIfExists("markets")
+    .dropTableIfExists("leagues")
+    .dropTableIfExists("sports")
+    .dropTableIfExists("crypto_prices")
+    .dropTableIfExists("tokens");
 };
