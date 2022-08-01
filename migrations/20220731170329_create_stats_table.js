@@ -5,6 +5,7 @@
 exports.up = function (knex) {
   const BETS_INFO = `(
     SELECT
+        NULL as id,
         token,
         sports,
         league,
@@ -20,6 +21,7 @@ exports.up = function (knex) {
 	 ) as q`;
   return knex.schema
     .createTable("stats_overall", function (table) {
+      table.increments("id").primary();
       table.string("token").index();
       table.string("sports").index();
       table.string("league").index();

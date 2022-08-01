@@ -5,6 +5,7 @@
 exports.up = function (knex) {
   const TIME_SERIES_INFO = `(
     SELECT 
+        NULL as id,
         betDate, 
         token, 
         COUNT(*) as numberOfBets, 
@@ -18,6 +19,7 @@ exports.up = function (knex) {
 	 ) as q`;
   return knex.schema
     .createTable("stats_time_series", function (table) {
+      table.increments("id").primary();
       table.date("betDate").index();
       table.string("token").index();
       table.integer("numberOfBets");

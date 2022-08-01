@@ -5,6 +5,7 @@
 exports.up = function (knex) {
   const BETS_INFO = `(
     SELECT 
+      _id,
       s.label as "sports", 
       l.label as "league",
       m.marketHash,
@@ -54,6 +55,7 @@ exports.up = function (knex) {
     ) as q`;
   return knex.schema
     .createTable("bet_details", function (table) {
+      table.string("_id").primary();
       table.string("sports").index();
       table.string("league").index();
       table.string("marketHash");
