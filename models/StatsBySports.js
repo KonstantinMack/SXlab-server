@@ -1,8 +1,8 @@
 const Model = require("../objection");
 
-class StatsUniqAddresses extends Model {
+class StatsBySports extends Model {
   static get tableName() {
-    return "stats_uniq_addresses";
+    return "stats_by_sports";
   }
 
   static get idColumn() {
@@ -10,4 +10,4 @@ class StatsUniqAddresses extends Model {
   }
 }
 
-module.exports = StatsUniqAddresses;
+module.exports = StatsBySports;
