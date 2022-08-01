@@ -10,10 +10,12 @@ exports.up = function (knex) {
         league,
         type,
         COUNT(*) as numberOfBets,
-        AVG(dollar_stake) as avgDollarBetSize,
-        SUM(dollar_stake) as totalDollarMatched,
+        AVG(dollarStake) as avgDollarBetSize,
+        SUM(dollarStake) as totalDollarMatched,
+        SUM(dollarFees) as totalDollarFees,
+        SUM(unitFees) as totalUnitFees,
         NOW() as updated_at
-    FROM bet_details_view
+    FROM bet_details
     GROUP BY token, sports, league, type
 	 ) as q`;
   return knex.schema
@@ -25,7 +27,9 @@ exports.up = function (knex) {
       table.integer("numberOfBets");
       table.double("avgDollarBetSize");
       table.double("totalDollarMatched");
-      table.timestamp("updated_at").defaultTo(knex.fn.now());
+      table.double("totalDollarFees");
+      table.double("totalUnitFees");
+      table.timestamp("updatedAt").defaultTo(knex.fn.now());
     })
     .then(() =>
       knex("stats_overall").insert(knex.select("*").fromRaw(BETS_INFO))

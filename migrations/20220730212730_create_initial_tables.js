@@ -7,7 +7,7 @@ exports.up = function (knex) {
     .createTable("sports", (table) => {
       table.integer("sportId").primary();
       table.string("label").notNullable();
-      table.timestamp("updated_at").defaultTo(knex.fn.now());
+      table.timestamp("updatedAt").defaultTo(knex.fn.now());
     })
     .createTable("leagues", (table) => {
       table.integer("leagueId").primary();
@@ -20,7 +20,7 @@ exports.up = function (knex) {
         .onUpdate("CASCADE");
       table.boolean("active");
       table.boolean("homeTeamFirst");
-      table.timestamp("updated_at").defaultTo(knex.fn.now());
+      table.timestamp("updatedAt").defaultTo(knex.fn.now());
     })
     .createTable("markets", (table) => {
       table.string("status");
@@ -57,13 +57,13 @@ exports.up = function (knex) {
       table.string("group2");
       table.string("liveEnabled");
       table.string("marketMeta");
-      table.timestamp("updated_at").defaultTo(knex.fn.now());
+      table.timestamp("updatedAt").defaultTo(knex.fn.now());
     })
     .createTable("tokens", (table) => {
       table.string("baseToken").primary();
       table.string("token").notNullable();
       table.integer("decimals").notNullable();
-      table.timestamp("updated_at").defaultTo(knex.fn.now());
+      table.timestamp("updatedAt").defaultTo(knex.fn.now());
     })
     .createTable("crypto_prices", (table) => {
       table.increments("id").primary();
@@ -75,7 +75,7 @@ exports.up = function (knex) {
       table.string("crypto");
       table.double("price").notNullable();
       table.string("date").notNullable();
-      table.timestamp("updated_at").defaultTo(knex.fn.now());
+      table.timestamp("updatedAt").defaultTo(knex.fn.now());
     })
     .createTable("bets", (table) => {
       table.string("_id").primary();
@@ -104,7 +104,7 @@ exports.up = function (knex) {
       table.integer("outcome");
       table.string("settleDate");
       table.string("date");
-      table.timestamp("updated_at").defaultTo(knex.fn.now());
+      table.timestamp("updatedAt").defaultTo(knex.fn.now());
     });
 };
 

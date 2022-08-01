@@ -5,23 +5,27 @@
 exports.up = function (knex) {
   const TIME_SERIES_INFO = `(
     SELECT 
-        bet_date, 
+        betDate, 
         token, 
         COUNT(*) as numberOfBets, 
-        SUM(dollar_stake) as totalDollarMatched, 
-        AVG(dollar_stake) as avgDollarBetSize,
+        SUM(dollarStake) as totalDollarMatched, 
+        AVG(dollarStake) as avgDollarBetSize,
+        SUM(dollarFees) as totalDollarFees,
+        SUM(unitFees) as totalUnitFees,
         NOW() as updated_at
-    FROM bet_details_view
-    GROUP BY bet_date, token
+    FROM bet_details
+    GROUP BY betDate, token
 	 ) as q`;
   return knex.schema
     .createTable("stats_time_series", function (table) {
-      table.date("bet_date").index();
+      table.date("betDate").index();
       table.string("token").index();
       table.integer("numberOfBets");
       table.double("totalDollarMatched");
       table.double("avgDollarBetSize");
-      table.timestamp("updated_at").defaultTo(knex.fn.now());
+      table.double("totalDollarFees");
+      table.double("totalUnitFees");
+      table.timestamp("updatedAt").defaultTo(knex.fn.now());
     })
     .then(() =>
       knex("stats_time_series").insert(
