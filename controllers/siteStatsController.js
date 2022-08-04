@@ -99,10 +99,11 @@ const fetchStatsByBetType = async (req, res) => {
   res.status(200).json(stats[0]);
 };
 
-const fetchPopularMarkets = async (_req, res) => {
+const fetchPopularMarkets = async (req, res) => {
+  const numMarkets = req.query.number;
   const markets = await StatsByMarkets.query()
     .orderBy("totalVolumeMatched", "desc")
-    .limit(50);
+    .limit(numMarkets);
   res.status(200).json(markets);
 };
 
