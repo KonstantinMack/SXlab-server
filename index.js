@@ -3,6 +3,7 @@ const express = require("express");
 const cors = require("cors");
 
 const siteStatsRoute = require("./routes/siteStatsRoute");
+const userStatsRoute = require("./routes/userStatsRoute");
 
 const PORT = process.env.PORT || 8080;
 
@@ -14,5 +15,6 @@ app.use(cors());
 
 // Redirect routes
 app.use("/api/site-stats-by", siteStatsRoute);
+app.use("/api/user-stats", userStatsRoute);
 
 app.listen(PORT, () => console.log(`Listening on port ${PORT}`));
