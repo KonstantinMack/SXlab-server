@@ -101,9 +101,22 @@ const fetchStatsByBetType = async (req, res) => {
 
 const fetchPopularMarkets = async (req, res) => {
   const numMarkets = req.query.number;
-  const markets = await StatsByMarkets.query()
-    .orderBy("totalVolumeMatched", "desc")
-    .limit(numMarkets);
+  const sport = req.query.sport;
+  const other = req.query.other;
+  const otherOperator = other === "true" ? "not in" : "in";
+
+  let markets;
+
+  if (sport === "All") {
+    markets = await StatsByMarkets.query()
+      .orderBy("totalVolumeMatched", "desc")
+      .limit(numMarkets);
+  } else {
+    markets = await StatsByMarkets.query()
+      .where("sports", otherOperator, sport.split(","))
+      .orderBy("totalVolumeMatched", "desc")
+      .limit(numMarkets);
+  }
   res.status(200).json(markets);
 };
 
