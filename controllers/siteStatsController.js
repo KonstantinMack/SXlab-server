@@ -3,6 +3,10 @@ const StatsTimeSeries = require("../models/StatsTimeSeries");
 const StatsBySports = require("../models/StatsBySports");
 const StatsByMarkets = require("../models/StatsByMarkets");
 
+const { SPORTS } = require("../util/globals");
+
+const sportArray = SPORTS.map((ele) => `"${ele}"`).join(", ");
+
 const fetchStatsBySports = async (_req, res) => {
   const addresses = await StatsBySports.query();
   res.status(200).json(addresses);
@@ -40,6 +44,7 @@ const fetchStatsByTokenAndSports = async (_req, res) => {
 
 const fetchStatsByTime = async (req, res) => {
   const timeframe = req.query.timeframe;
+  const sport = req.query.sport;
 
   switch (timeframe.toLowerCase().trim()) {
     case "week":
@@ -55,6 +60,20 @@ const fetchStatsByTime = async (req, res) => {
       break;
   }
 
+  switch (sport.toLowerCase().trim()) {
+    case "all":
+      sportQuery = "";
+      break;
+
+    case "other":
+      sportQuery = `WHERE sports not in (${sportArray})`;
+      break;
+
+    default:
+      sportQuery = `WHERE sports = "${sport}"`;
+      break;
+  }
+
   const query = `
     SELECT 
       token,
@@ -63,6 +82,7 @@ const fetchStatsByTime = async (req, res) => {
 	    ROUND(SUM(totalDollarMatched), 2) as totalDollarMatched,
 	    ROUND(SUM(totalDollarFees), 2) as totalDollarFees
     FROM stats_time_series
+    ${sportQuery}
     GROUP BY 1, 2, 3
   `;
 
