@@ -104,7 +104,7 @@ const fetchOpenBets = async (req, res) => {
   };
 
   const bets = await axios
-    .post(BETS_URL, bets_payload)
+    .post(BETS_URL, bets_payload, { headers: headers })
     .then((response) => response.data.data)
     .catch((err) => ({ message: err, trades: [] }));
 
@@ -113,7 +113,7 @@ const fetchOpenBets = async (req, res) => {
       marketHashes: bets.trades.slice(0, 50).map((bet) => bet.marketHash),
     };
     const markets = await axios
-      .post(MARKETS_URL, market_payload)
+      .post(MARKETS_URL, market_payload, { headers: headers })
       .then((response) => response.data.data)
       .catch((err) => ({ message: err }));
 
