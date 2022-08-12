@@ -105,8 +105,6 @@ const fetchOpenBets = async (req, res) => {
     tradeStatus: "SUCCESS",
   };
 
-  console.log(headers);
-
   const bets = await axios
     .post(BETS_URL, bets_payload, { headers })
     .then((response) => response.data.data)
