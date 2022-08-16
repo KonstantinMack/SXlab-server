@@ -28,7 +28,9 @@ const connections = {
   },
 };
 
-module.exports =
-  process.env.NODE_ENV === "production"
-    ? connections.production
-    : connections.development;
+module.exports = connections.production;
+
+// module.exports =
+//   process.env.NODE_ENV === "production"
+//     ? connections.production
+//     : connections.development;

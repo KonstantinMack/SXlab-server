@@ -19,4 +19,6 @@ app.use("/api/site-stats-by", siteStatsRoute);
 app.use("/api/user-stats", userStatsRoute);
 app.use("/api/tipster", tipsterRoute);
 
-app.listen(PORT, () => console.log(`Listening on port ${PORT}`));
+app.listen(PORT, () =>
+  console.log(`Listening on port ${PORT}, env vars: ${process.env}`)
+);
