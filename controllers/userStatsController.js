@@ -4,7 +4,7 @@ const BetDetails = require("../models/BetDetails");
 const Users = require("../models/Users");
 const { SPORTS } = require("../util/globals");
 
-const sportArray = SPORTS.map((ele) => `"${ele}"`).join(", ");
+const sportArray = SPORTS.map((ele) => `'${ele}'`).join(", ");
 
 const fetchStatsByAddress = async (req, res) => {
   const sport = req.query.sport;
@@ -33,7 +33,7 @@ const fetchStatsByAddress = async (req, res) => {
         ROUND(AVG(isMaker), 2) as isMaker, 
         ROUND(AVG(decimalOdds), 2) as avgOdds
     FROM bet_details
-    WHERE bettor = "${address}"
+    WHERE bettor = '${address}'
     ${sportQuery}
     GROUP BY bettor
     `;
@@ -53,7 +53,7 @@ const fetchStatsByDate = async (req, res) => {
   } else if (sport === "Other") {
     sportQuery = `AND sports NOT IN (${sportArray})`;
   } else {
-    sportQuery = `AND sports = "${sport}"`;
+    sportQuery = `AND sports = '${sport}'`;
   }
 
   const query = `
@@ -64,7 +64,7 @@ const fetchStatsByDate = async (req, res) => {
       SUM(dollarProfitLoss) as dollarProfitLoss, 
       COUNT(*) as numBets
     FROM bet_details
-    WHERE bettor = "${address}"
+    WHERE bettor = '${address}'
     ${sportQuery}
     GROUP BY bettor, betDate
     ORDER BY betDate ASC
@@ -81,7 +81,7 @@ const fetchStatsBySport = async (req, res) => {
   const query = `
     SELECT bettor, sports, SUM(dollarStake) as dollarStake, SUM(dollarProfitLoss) as dollarProfitLoss
     FROM bet_details
-    WHERE bettor = "${address}"
+    WHERE bettor = '${address}'
     GROUP BY bettor, sports;
   `;
 

@@ -5,7 +5,7 @@ const StatsByMarkets = require("../models/StatsByMarkets");
 
 const { SPORTS } = require("../util/globals");
 
-const sportArray = SPORTS.map((ele) => `"${ele}"`).join(", ");
+const sportArray = SPORTS.map((ele) => `'${ele}'`).join(", ");
 
 const fetchStatsBySports = async (_req, res) => {
   const addresses = await StatsBySports.query();
@@ -18,7 +18,7 @@ const fetchStatsByTokenAndSports = async (_req, res) => {
     `
     SELECT 
       token, 
-      "All" AS sports, 
+      'All' AS sports, 
       SUM(numberOfBets) as numberOfBets, 
       ROUND(SUM(totalDollarMatched), 2) as totalDollarMatched, 
       ROUND(SUM(totalDollarMatched) / SUM(numberOfBets), 2) as avgDollarBetSize, 
@@ -95,22 +95,22 @@ const fetchStatsByBetType = async (req, res) => {
   const sports = req.query.sports;
   const sportsString = sports
     .split(",")
-    .map((sport) => `"${sport}"`)
+    .map((sport) => `'${sport}'`)
     .join(", ");
   const query = `
-    SELECT "All" as sports, type as betType, SUM(totalDollarMatched) as totalDollarMatched
+    SELECT 'All' as sports, type as betType, SUM(totalDollarMatched) as totalDollarMatched
     FROM stats_overall
-    WHERE type in ("MONEY_LINE", "OVER_UNDER", "SPREAD")
+    WHERE type in ('MONEY_LINE', 'OVER_UNDER', 'SPREAD')
     GROUP BY 1, 2
     UNION ALL
     SELECT sports, type as betType, SUM(totalDollarMatched) as totalDollarMatched
     FROM stats_overall
-    WHERE type in ("MONEY_LINE", "OVER_UNDER", "SPREAD") AND sports IN (${sportsString})
+    WHERE type in ('MONEY_LINE', 'OVER_UNDER', 'SPREAD') AND sports IN (${sportsString})
     GROUP BY 1, 2
     UNION ALL
-    SELECT "Other" AS sports, type as betType, SUM(totalDollarMatched) as totalDollarMatched
+    SELECT 'Other' AS sports, type as betType, SUM(totalDollarMatched) as totalDollarMatched
     FROM stats_overall
-    WHERE type in ("MONEY_LINE", "OVER_UNDER", "SPREAD") AND sports NOT IN (${sportsString})
+    WHERE type in ('MONEY_LINE', 'OVER_UNDER', 'SPREAD') AND sports NOT IN (${sportsString})
     GROUP BY 1, 2
     `;
 

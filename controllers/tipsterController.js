@@ -3,7 +3,7 @@ const BetDetails = require("../models/BetDetails");
 const Favourites = require("../models/Favourites");
 const { SPORTS } = require("../util/globals");
 
-const sportArray = SPORTS.map((ele) => `"${ele}"`).join(", ");
+const sportArray = SPORTS.map((ele) => `'${ele}'`).join(", ");
 
 const fetchTipsters = async (req, res) => {
   const sport = req.query.sport;
