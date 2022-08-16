@@ -10,14 +10,21 @@ const connections = {
     connection: {
       host: "127.0.0.1",
       user: "root",
-      password: process.env.DB_PASSWORD,
+      password: process.env.DB_PASSWORD_LOCAL,
       database: "sxlab",
       charset: "utf8",
     },
   },
   production: {
     client: "mysql",
-    connection: process.env.JAWSDB_URL,
+    connection: {
+      host: process.env.DB_HOST,
+      user: process.env.DB_USERNAME,
+      password: process.env.DB_PASSWORD,
+      port: process.env.DB_PORT,
+      database: "sxlab",
+      charset: "utf8",
+    },
   },
 };
 
