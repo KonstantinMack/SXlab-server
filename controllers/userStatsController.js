@@ -16,7 +16,7 @@ const fetchStatsByAddress = async (req, res) => {
   } else if (sport === "Other") {
     sportQuery = `AND sports NOT IN (${sportArray})`;
   } else {
-    sportQuery = `AND sports = "${sport}"`;
+    sportQuery = `AND sports = '${sport}'`;
   }
 
   const query = `

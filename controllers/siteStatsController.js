@@ -70,7 +70,7 @@ const fetchStatsByTime = async (req, res) => {
       break;
 
     default:
-      sportQuery = `WHERE sports = "${sport}"`;
+      sportQuery = `WHERE sports = '${sport}'`;
       break;
   }
 

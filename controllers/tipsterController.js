@@ -15,7 +15,7 @@ const fetchTipsters = async (req, res) => {
   } else if (sport === "Other") {
     sportQuery = `WHERE sports NOT IN (${sportArray})`;
   } else {
-    sportQuery = `WHERE sports = "${sport}"`;
+    sportQuery = `WHERE sports = '${sport}'`;
   }
 
   const query = `
