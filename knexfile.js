@@ -8,7 +8,7 @@ const connections = {
   development: {
     client: "mysql2",
     connection: {
-      host: "127.0.0.5",
+      host: "127.0.0.1",
       user: "root",
       password: process.env.DB_PASSWORD_LOCAL,
       database: "sxlab",
@@ -28,7 +28,9 @@ const connections = {
   },
 };
 
-module.exports =
-  process.env.NODE_ENV === "production"
-    ? connections.production
-    : connections.development;
+module.exports = connections.development;
+
+// module.exports =
+//   process.env.NODE_ENV === "production"
+//     ? connections.production
+//     : connections.development;
