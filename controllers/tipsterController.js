@@ -1,6 +1,7 @@
 require("dotenv").config();
 const BetDetails = require("../models/BetDetails");
 const Favourites = require("../models/Favourites");
+const StatsTipsters = require("../models/StatsTipsters");
 const { SPORTS } = require("../util/globals");
 
 const sportArray = SPORTS.map((ele) => `'${ele}'`).join(", ");
@@ -11,8 +12,15 @@ const fetchTipsters = async (req, res) => {
 
   let sportQuery;
   if (sport === "All") {
-    sportQuery = "";
-  } else if (sport === "Other") {
+    const stats = await StatsTipsters.query().orderBy(
+      "dollarProfitLoss",
+      "desc"
+    );
+    res.status(200).json(stats);
+    return;
+  }
+
+  if (sport === "Other") {
     sportQuery = `WHERE sports NOT IN (${sportArray})`;
   } else {
     sportQuery = `WHERE sports = '${sport}'`;
