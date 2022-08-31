@@ -6,9 +6,11 @@ exports.up = function (knex) {
   const TIME_SERIES_INFO = `(
     SELECT 
         NULL as id,
-        betDate,
-        sports,
-        token, 
+        YEAR(betDate) as year, 
+        MONTH(betDate) as month,
+        'All' as sports,
+        token,
+        COUNT(DISTINCT(bettor)) AS numberOfAddresses,
         COUNT(*) as numberOfBets, 
         SUM(dollarStake) as totalDollarMatched, 
         AVG(dollarStake) as avgDollarBetSize,
@@ -16,16 +18,36 @@ exports.up = function (knex) {
         SUM(unitFees) as totalUnitFees,
         NOW() as updated_at
     FROM bet_details
-    GROUP BY betDate, sports, token
+    GROUP BY YEAR(betDate), MONTH(betDate), token
+    
+    UNION ALL
+
+    SELECT 
+        NULL as id,
+        YEAR(betDate) as year, 
+        MONTH(betDate) as month,
+        sports,
+        token,
+        COUNT(DISTINCT(bettor)) AS numberOfAddresses,
+        COUNT(*) as numberOfBets, 
+        SUM(dollarStake) as totalDollarMatched, 
+        AVG(dollarStake) as avgDollarBetSize,
+        SUM(dollarFees) as totalDollarFees,
+        SUM(unitFees) as totalUnitFees,
+        NOW() as updated_at
+    FROM bet_details
+    GROUP BY YEAR(betDate), MONTH(betDate), sports, token
 	 ) as q`;
   return knex.schema
     .dropTableIfExists("stats_time_series")
     .then(() =>
       knex.schema.createTable("stats_time_series", function (table) {
         table.increments("id").primary();
-        table.date("betDate").index();
+        table.integer("year").index();
+        table.integer("month").index();
         table.string("sports").index();
         table.string("token").index();
+        table.integer("numberOfAddresses");
         table.integer("numberOfBets");
         table.double("totalDollarMatched");
         table.double("avgDollarBetSize");

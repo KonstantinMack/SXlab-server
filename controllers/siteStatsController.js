@@ -43,28 +43,9 @@ const fetchStatsByTokenAndSports = async (_req, res) => {
 };
 
 const fetchStatsByTime = async (req, res) => {
-  const timeframe = req.query.timeframe;
   const sport = req.query.sport;
 
-  switch (timeframe.toLowerCase().trim()) {
-    case "week":
-      timeQuery = "YEAR(betDate) as `year`, WEEK(betDate) as `week`,";
-      break;
-
-    case "month":
-      timeQuery = "YEAR(betDate) as `year`, MONTH(betDate) as `month`,";
-      break;
-
-    default:
-      timeQuery = "YEAR(betDate) as `year`, YEAR(betDate) as `year2`,";
-      break;
-  }
-
   switch (sport.toLowerCase().trim()) {
-    case "all":
-      sportQuery = "";
-      break;
-
     case "other":
       sportQuery = `WHERE sports not in (${sportArray})`;
       break;
@@ -77,7 +58,9 @@ const fetchStatsByTime = async (req, res) => {
   const query = `
     SELECT 
       token,
-      ${timeQuery} 
+      year,
+      month,
+  	  SUM(numberOfAddresses) as numberOfAddresses,
   	  SUM(numberOfBets) as numberOfBets,
 	    ROUND(SUM(totalDollarMatched), 2) as totalDollarMatched,
 	    ROUND(SUM(totalDollarFees), 2) as totalDollarFees
