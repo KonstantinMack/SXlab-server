@@ -12,7 +12,12 @@ exports.up = function (knex) {
       m.gameTime,
       m.teamOneName, 
       m.teamTwoName,
-      m.type,
+    CASE
+      WHEN m.type IN ('52', '63', '88', '202', '203', '204', '205', '226', '274') THEN "MONEY_LINE"
+      WHEN m.type IN ('2', '28', '29', '77', '165', '166', '835', '1536') THEN "OVER_UNDER"
+      WHEN m.type IN ('3', '53', '201', '342', '866') THEN "SPREAD"
+      ELSE m.type
+    END as 'type',
       m.outcome,
       b.bettor,
       b.maker as isMaker,

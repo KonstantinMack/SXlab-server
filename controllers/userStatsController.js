@@ -39,8 +39,25 @@ const fetchStatsByAddress = async (req, res) => {
     `;
 
   const knexBetDetails = BetDetails.knex();
-  const stats = await knexBetDetails.raw(query);
-  res.status(200).json(stats[0]);
+  const response = await knexBetDetails.raw(query);
+  const stats = response[0].length
+    ? response[0]
+    : [
+        {
+          bettor: address,
+          numBets: 0,
+          dollarStake: 0,
+          avgDollarStake: 0,
+          dollarProfitLoss: 0,
+          yield: 0,
+          betsWon: 0,
+          betsPushed: 0,
+          betsLost: 0,
+          isMaker: "-",
+          avgOdds: "-",
+        },
+      ];
+  res.status(200).json(stats);
 };
 
 const fetchStatsByDate = async (req, res) => {
