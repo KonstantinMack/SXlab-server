@@ -12,12 +12,7 @@ exports.up = function (knex) {
     .createTable("leagues", (table) => {
       table.integer("leagueId").primary();
       table.string("label").notNullable();
-      table
-        .integer("sportId")
-        .notNullable()
-        .references("sportId")
-        .inTable("sports")
-        .onUpdate("CASCADE");
+      table.integer("sportId").notNullable().index();
       table.boolean("active");
       table.boolean("homeTeamFirst");
       table.timestamp("updatedAt").defaultTo(knex.fn.now());
@@ -40,16 +35,8 @@ exports.up = function (knex) {
       table.string("teamTwoScore");
       table.string("sportXeventId");
       table.string("sportLabel");
-      table
-        .integer("sportId")
-        .references("sportId")
-        .inTable("sports")
-        .onUpdate("CASCADE");
-      table
-        .integer("leagueId")
-        .references("leagueId")
-        .inTable("leagues")
-        .onUpdate("CASCADE");
+      table.integer("sportId").index();
+      table.integer("leagueId").index();
       table.boolean("homeTeamFirst");
       table.string("leagueLabel");
       table.string("group1");
@@ -67,11 +54,7 @@ exports.up = function (knex) {
     })
     .createTable("crypto_prices", (table) => {
       table.increments("id").primary();
-      table
-        .string("baseToken")
-        .references("baseToken")
-        .inTable("tokens")
-        .onUpdate("CASCADE");
+      table.string("baseToken").index();
       table.string("crypto");
       table.double("price").notNullable();
       table.string("date").notNullable();
@@ -79,20 +62,12 @@ exports.up = function (knex) {
     })
     .createTable("bets", (table) => {
       table.string("_id").primary();
-      table
-        .string("baseToken")
-        .references("baseToken")
-        .inTable("tokens")
-        .onUpdate("CASCADE");
+      table.string("baseToken").index();
       table.string("bettor").notNullable().index();
       table.double("stake", 30, 0).notNullable();
       table.double("odds", 30, 0).notNullable();
       table.string("orderHash");
-      table
-        .string("marketHash")
-        .references("marketHash")
-        .inTable("markets")
-        .onUpdate("CASCADE");
+      table.string("marketHash").index();
       table.boolean("maker");
       table.integer("betTime");
       table.boolean("settled").notNullable();

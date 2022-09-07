@@ -63,7 +63,7 @@ exports.up = function (knex) {
       table.string("_id").primary();
       table.string("sports").index();
       table.string("league").index();
-      table.string("marketHash");
+      table.string("marketHash").index();
       table.integer("gameTime").unsigned();
       table.string("teamOneName");
       table.string("teamTwoName");
@@ -81,7 +81,7 @@ exports.up = function (knex) {
       table.float("dollarProfitLoss");
       table.float("unitFees");
       table.float("dollarFees");
-      table.date("betDate");
+      table.date("betDate").index();
       table.timestamp("updatedAt").defaultTo(knex.fn.now());
     })
     .then(() =>
