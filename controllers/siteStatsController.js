@@ -2,10 +2,19 @@ const StatsOverall = require("../models/StatsOverall");
 const StatsTimeSeries = require("../models/StatsTimeSeries");
 const StatsBySports = require("../models/StatsBySports");
 const StatsByMarkets = require("../models/StatsByMarkets");
+const UpdateTime = require("../models/UpdateTime");
 
 const { SPORTS } = require("../util/globals");
 
 const sportArray = SPORTS.map((ele) => `'${ele}'`).join(", ");
+
+const fetchUpdateTime = async (_req, res) => {
+  const updateTime = await UpdateTime.query()
+    .select("updatedAt")
+    .orderBy("id", "desc")
+    .limit(1);
+  res.status(200).json(updateTime);
+};
 
 const fetchStatsBySports = async (_req, res) => {
   const addresses = await StatsBySports.query();
@@ -124,6 +133,7 @@ const fetchPopularMarkets = async (req, res) => {
 };
 
 module.exports = {
+  fetchUpdateTime,
   fetchStatsBySports,
   fetchStatsByTokenAndSports,
   fetchStatsByTime,

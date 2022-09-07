@@ -1,6 +1,8 @@
 const router = require("express").Router();
 const siteStatsController = require("../controllers/siteStatsController");
 
+router.route("/update-time").get(siteStatsController.fetchUpdateTime);
+
 router.route("/sports").get(siteStatsController.fetchStatsBySports);
 
 router
