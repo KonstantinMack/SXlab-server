@@ -4,6 +4,10 @@ const userStatsController = require("../controllers/userStatsController");
 router.route("/address/stats").get(userStatsController.fetchStatsByAddress);
 
 router
+  .route("/address/type-stats")
+  .get(userStatsController.fetchTypeStatsByAddress);
+
+router
   .route("/address/stats-by-date")
   .get(userStatsController.fetchStatsByDate);
 

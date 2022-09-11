@@ -60,6 +60,63 @@ const fetchStatsByAddress = async (req, res) => {
   res.status(200).json(stats);
 };
 
+const fetchTypeStatsByAddress = async (req, res) => {
+  const sport = req.query.sport;
+  const address = req.query.address;
+
+  let sportQuery;
+  if (sport === "All") {
+    sportQuery = "";
+  } else if (sport === "Other") {
+    sportQuery = `AND sports NOT IN (${sportArray})`;
+  } else {
+    sportQuery = `AND sports = '${sport}'`;
+  }
+
+  const query = `
+    SELECT 
+        bettor,
+        type as betType,
+        COUNT(*) as numBets, 
+        ROUND(SUM(dollarStake)) as totalDollarMatched,
+        ROUND(AVG(dollarStake)) as avgDollarStake,
+        ROUND(SUM(dollarProfitLoss)) as dollarProfitLoss, 
+        ROUND(SUM(dollarProfitLoss) * 100 / SUM(dollarStake), 2) as yield,
+        CAST(SUM(IF(dollarProfitLoss > 0, 1, 0)) AS SIGNED) as betsWon,
+        CAST(SUM(IF(dollarProfitLoss = 0, 1, 0)) AS SIGNED)as betsPushed,
+        CAST(SUM(IF(dollarProfitLoss < 0, 1, 0)) AS SIGNED)as betsLost,
+        ROUND(AVG(isMaker), 2) as isMaker, 
+        ROUND(AVG(decimalOdds), 2) as avgOdds
+    FROM bet_details
+    WHERE bettor = '${address}'
+    ${sportQuery}
+    AND type IN ('SPREAD', 'MONEY_LINE', 'OVER_UNDER')
+    GROUP BY bettor, type
+    `;
+
+  const knexBetDetails = BetDetails.knex();
+  const response = await knexBetDetails.raw(query);
+  const stats = response[0].length
+    ? response[0]
+    : [
+        {
+          bettor: address,
+          betType: "SPREAD",
+          numBets: 0,
+          totalDollarMatched: 0,
+          avgDollarStake: 0,
+          dollarProfitLoss: 0,
+          yield: 0,
+          betsWon: 0,
+          betsPushed: 0,
+          betsLost: 0,
+          isMaker: "-",
+          avgOdds: "-",
+        },
+      ];
+  res.status(200).json(stats);
+};
+
 const fetchStatsByDate = async (req, res) => {
   const sport = req.query.sport;
   const address = req.query.address;
@@ -165,6 +222,7 @@ const addUser = async (req, res) => {
 
 module.exports = {
   fetchStatsByAddress,
+  fetchTypeStatsByAddress,
   fetchStatsByDate,
   fetchStatsBySport,
   fetchOpenBets,

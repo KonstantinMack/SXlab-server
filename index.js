@@ -13,7 +13,11 @@ const app = express();
 // Define middleware
 app.use(express.json());
 
-var allowedOrigins = ["http://localhost:3000", "https://www.sx-lab.bet"];
+var allowedOrigins = [
+  "http://localhost:3000",
+  "https://www.sx-lab.bet",
+  "https://sx-lab.bet",
+];
 app.use(
   cors({
     origin: function (origin, callback) {
