@@ -213,8 +213,17 @@ const fetchOpenBets = async (req, res) => {
             ),
           };
         })
-        .filter((bet) => bet.market.gameTime > new Date().getTime() / 1000)
-        .sort((a, b) => a.market.gameTime - b.market.gameTime)
+        .filter(
+          (bet) => bet.market.gameTime > new Date().getTime() / 1000 - 10000
+        )
+        .sort((a, b) => {
+          if (a.market.gameTime > b.market.gameTime) return 1;
+          if (a.market.gameTime < b.market.gameTime) return -1;
+          if (a.market.teamOneName > b.market.teamOneName) return 1;
+          if (a.market.teamOneName < b.market.teamOneName) return -1;
+          if (a.market.type > b.market.type) return 1;
+          if (a.market.type < b.market.type) return -1;
+        })
     );
   } else {
     res.status(200).json(bets.trades);
