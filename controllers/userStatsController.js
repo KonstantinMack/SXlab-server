@@ -185,21 +185,30 @@ const fetchOpenBets = async (req, res) => {
     .catch((err) => ({ message: err, trades: [] }));
 
   if (bets.trades.length) {
-    const market_payload = {
-      marketHashes: bets.trades.slice(0, 50).map((bet) => bet.marketHash),
-    };
-    const markets = await axios
-      .post(MARKETS_URL, market_payload, { headers })
-      .then((response) => response.data.data)
-      .catch((err) => ({ message: err }));
+    const marketHashes = Array.from(
+      new Set(bets.trades.map((bet) => bet.marketHash))
+    );
+
+    let all_markets = [];
+
+    for (let i = 0; i < Math.ceil(marketHashes.length / 50); i++) {
+      const market_payload = {
+        marketHashes: marketHashes.slice(i * 50, (i + 1) * 50),
+      };
+      const markets = await axios
+        .post(MARKETS_URL, market_payload, { headers })
+        .then((response) => response.data.data)
+        .catch((err) => ({ message: err }));
+
+      all_markets = [...all_markets, ...markets];
+    }
 
     res.status(200).json(
       bets.trades
-        .slice(0, 50)
         .map((bet) => {
           return {
             ...bet,
-            market: markets.find(
+            market: all_markets.find(
               (market) => market.marketHash === bet.marketHash
             ),
           };
