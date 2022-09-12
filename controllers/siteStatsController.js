@@ -2,6 +2,7 @@ const StatsOverall = require("../models/StatsOverall");
 const StatsTimeSeries = require("../models/StatsTimeSeries");
 const StatsBySports = require("../models/StatsBySports");
 const StatsByMarkets = require("../models/StatsByMarkets");
+const BetDetails = require("../models/BetDetails");
 const UpdateTime = require("../models/UpdateTime");
 
 const { SPORTS } = require("../util/globals");
@@ -111,6 +112,24 @@ const fetchStatsByBetType = async (req, res) => {
   res.status(200).json(stats[0]);
 };
 
+const fetchStatsByBetTime = async (_req, res) => {
+  const query = `
+    SELECT 
+	    CASE
+		    WHEN betTime > gameTime THEN 'inplay'
+		    ELSE 'pregame'
+      END as betTime,
+      SUM(dollarStake) as dollarStake,
+      AVG(dollarStake) as avgStake,
+      COUNT(DISTINCT bettor) as users
+    FROM bet_details
+    GROUP BY 1
+  `;
+  const knexStatsBetTime = BetDetails.knex();
+  const stats = await knexStatsBetTime.raw(query);
+  res.status(200).json(stats[0]);
+};
+
 const fetchPopularMarkets = async (req, res) => {
   const numMarkets = req.query.number;
   const sport = req.query.sport;
@@ -137,6 +156,7 @@ module.exports = {
   fetchStatsBySports,
   fetchStatsByTokenAndSports,
   fetchStatsByTime,
+  fetchStatsByBetTime,
   fetchStatsByBetType,
   fetchPopularMarkets,
 };

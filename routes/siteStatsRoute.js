@@ -11,6 +11,8 @@ router
 
 router.route("/time").get(siteStatsController.fetchStatsByTime);
 
+router.route("/bet-time").get(siteStatsController.fetchStatsByBetTime);
+
 router.route("/bet-type").get(siteStatsController.fetchStatsByBetType);
 
 router.route("/markets").get(siteStatsController.fetchPopularMarkets);

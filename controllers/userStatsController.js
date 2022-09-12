@@ -164,6 +164,41 @@ const fetchStatsBySport = async (req, res) => {
   res.status(200).json(stats[0]);
 };
 
+const fetchStatsByBetTime = async (req, res) => {
+  const sport = req.query.sport;
+  const address = req.query.address;
+
+  let sportQuery;
+  if (sport === "All") {
+    sportQuery = "";
+  } else if (sport === "Other") {
+    sportQuery = `AND sports NOT IN (${sportArray})`;
+  } else {
+    sportQuery = `AND sports = '${sport}'`;
+  }
+
+  const query = `
+    SELECT
+      bettor,
+	    CASE
+		    WHEN betTime > gameTime THEN 'inplay'
+		    ELSE 'pregame'
+      END as betTime,
+      SUM(dollarStake) as dollarStake,
+      SUM(dollarProfitLoss) as dollarProfitLoss,
+      SUM(dollarProfitLoss) / SUM(dollarStake) as yield,
+      AVG(dollarStake) as avgStake,
+      COUNT(DISTINCT bettor) as users
+    FROM bet_details
+    WHERE bettor = '${address}'
+    ${sportQuery}
+    GROUP BY 1, 2
+  `;
+  const knexStatsBetTime = BetDetails.knex();
+  const stats = await knexStatsBetTime.raw(query);
+  res.status(200).json(stats[0]);
+};
+
 const fetchOpenBets = async (req, res) => {
   const address = req.query.address;
   const BETS_URL = "https://api.sx.bet/trades";
@@ -243,6 +278,7 @@ module.exports = {
   fetchTypeStatsByAddress,
   fetchStatsByDate,
   fetchStatsBySport,
+  fetchStatsByBetTime,
   fetchOpenBets,
   addUser,
 };
