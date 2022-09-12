@@ -199,6 +199,48 @@ const fetchStatsByBetTime = async (req, res) => {
   res.status(200).json(stats[0]);
 };
 
+const fetchStatsByOdds = async (req, res) => {
+  const sport = req.query.sport;
+  const address = req.query.address;
+
+  let sportQuery;
+  if (sport === "All") {
+    sportQuery = "";
+  } else if (sport === "Other") {
+    sportQuery = `AND sports NOT IN (${sportArray})`;
+  } else {
+    sportQuery = `AND sports = '${sport}'`;
+  }
+
+  const query = `
+    SELECT 
+      bettor,
+      CASE 
+        WHEN decimalOdds < 1.5 THEN '1-1.5'
+        WHEN decimalOdds BETWEEN 1.5 AND 2 THEN '1.5-2.0'
+        WHEN decimalOdds BETWEEN 2 AND 3 THEN '2-3'
+        ELSE '3+'
+      END AS oddsRange,
+      COUNT(*) as numBets, 
+      ROUND(SUM(dollarStake)) as dollarStake,
+      ROUND(AVG(dollarStake)) as avgDollarStake,
+      ROUND(SUM(dollarProfitLoss)) as dollarProfitLoss, 
+      ROUND(SUM(dollarProfitLoss) * 100 / SUM(dollarStake), 2) as yield,
+      CAST(SUM(IF(dollarProfitLoss > 0, 1, 0)) AS SIGNED) as betsWon,
+      CAST(SUM(IF(dollarProfitLoss = 0, 1, 0)) AS SIGNED)as betsPushed,
+      CAST(SUM(IF(dollarProfitLoss < 0, 1, 0)) AS SIGNED)as betsLost,
+      ROUND(AVG(decimalOdds), 2) as avgOdds
+    FROM bet_details
+    WHERE bettor = '${address}'
+    ${sportQuery}
+    GROUP BY bettor, oddsRange
+    ORDER BY oddsRange;
+  `;
+  const knexStatsOdds = BetDetails.knex();
+  const stats = await knexStatsOdds.raw(query);
+  res.status(200).json(stats[0]);
+};
+
 const fetchOpenBets = async (req, res) => {
   const address = req.query.address;
   const BETS_URL = "https://api.sx.bet/trades";
@@ -279,6 +321,7 @@ module.exports = {
   fetchStatsByDate,
   fetchStatsBySport,
   fetchStatsByBetTime,
+  fetchStatsByOdds,
   fetchOpenBets,
   addUser,
 };

@@ -19,6 +19,10 @@ router
   .route("/address/stats-by-bet-time")
   .get(userStatsController.fetchStatsByBetTime);
 
+router
+  .route("/address/stats-by-odds")
+  .get(userStatsController.fetchStatsByOdds);
+
 router.route("/address/bets").get(userStatsController.fetchOpenBets);
 
 router.route("/address").post(userStatsController.addUser);
