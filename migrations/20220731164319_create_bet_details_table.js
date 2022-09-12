@@ -10,6 +10,7 @@ exports.up = function (knex) {
       l.label as "league",
       m.marketHash,
       m.gameTime,
+      b.betTime,
       m.teamOneName, 
       m.teamTwoName,
     CASE
@@ -65,6 +66,7 @@ exports.up = function (knex) {
       table.string("league").index();
       table.string("marketHash").index();
       table.integer("gameTime").unsigned();
+      table.integer("betTime").unsigned();
       table.string("teamOneName");
       table.string("teamTwoName");
       table.string("type").index();
