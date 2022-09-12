@@ -214,7 +214,7 @@ const fetchOpenBets = async (req, res) => {
           };
         })
         .filter(
-          (bet) => bet.market.gameTime > new Date().getTime() / 1000 - 10000
+          (bet) => bet.market.gameTime > new Date().getTime() / 1000 - 14400
         )
         .sort((a, b) => {
           if (a.market.gameTime > b.market.gameTime) return 1;
