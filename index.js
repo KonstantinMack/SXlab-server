@@ -17,6 +17,7 @@ var allowedOrigins = [
   "http://localhost:3000",
   "https://www.sx-lab.bet",
   "https://sx-lab.bet",
+  "https://sx-lab.herokuapp.com",
 ];
 app.use(
   cors({
