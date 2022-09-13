@@ -181,18 +181,28 @@ const fetchStatsByBetTime = async (req, res) => {
     SELECT
       bettor,
 	    CASE
-		    WHEN betTime > gameTime THEN 'inplay'
-		    ELSE 'pregame'
-      END as betTime,
-      SUM(dollarStake) as dollarStake,
-      SUM(dollarProfitLoss) as dollarProfitLoss,
-      SUM(dollarProfitLoss) / SUM(dollarStake) as yield,
-      AVG(dollarStake) as avgStake,
-      COUNT(DISTINCT bettor) as users
+	      WHEN gameTime > 86400 + betTime THEN '>24 hours before'
+		    WHEN gameTime > betTime THEN '<24 hours before'
+		    ELSE 'Ingame'
+	    END as betTiming,
+      COUNT(*) as numBets, 
+      ROUND(SUM(dollarStake)) as dollarStake,
+      ROUND(AVG(dollarStake)) as avgDollarStake,
+      ROUND(SUM(dollarProfitLoss)) as dollarProfitLoss, 
+      ROUND(SUM(dollarProfitLoss) * 100 / SUM(dollarStake), 2) as yield,
+      CAST(SUM(IF(dollarProfitLoss > 0, 1, 0)) AS SIGNED) as betsWon,
+      CAST(SUM(IF(dollarProfitLoss = 0, 1, 0)) AS SIGNED)as betsPushed,
+      CAST(SUM(IF(dollarProfitLoss < 0, 1, 0)) AS SIGNED)as betsLost,
+      ROUND(AVG(decimalOdds), 2) as avgOdds
     FROM bet_details
     WHERE bettor = '${address}'
     ${sportQuery}
-    GROUP BY 1, 2
+    GROUP BY bettor, betTiming
+    ORDER BY CASE 
+    WHEN betTiming = '>24 hours before' THEN 0
+    WHEN betTiming = '<24 hours before' THEN 1
+    ELSE 2 END ASC
+
   `;
   const knexStatsBetTime = BetDetails.knex();
   const stats = await knexStatsBetTime.raw(query);
@@ -216,9 +226,9 @@ const fetchStatsByOdds = async (req, res) => {
     SELECT 
       bettor,
       CASE 
-        WHEN decimalOdds < 1.5 THEN '1-1.5'
-        WHEN decimalOdds BETWEEN 1.5 AND 2 THEN '1.5-2.0'
-        WHEN decimalOdds BETWEEN 2 AND 3 THEN '2-3'
+        WHEN decimalOdds < 1.5 THEN '1 - 1.5'
+        WHEN decimalOdds BETWEEN 1.5 AND 2 THEN '1.5 - 2'
+        WHEN decimalOdds BETWEEN 2 AND 3 THEN '2 - 3'
         ELSE '3+'
       END AS oddsRange,
       COUNT(*) as numBets, 
