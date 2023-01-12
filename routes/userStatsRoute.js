@@ -25,6 +25,8 @@ router
 
 router.route("/address/bets").get(userStatsController.fetchOpenBets);
 
+router.route("/bet-finder/bets").get(userStatsController.fetchBetsByEvent);
+
 router.route("/address").post(userStatsController.addUser);
 
 module.exports = router;

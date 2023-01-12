@@ -317,6 +317,73 @@ const fetchOpenBets = async (req, res) => {
   }
 };
 
+const fetchBetsByEvent = async (req, res) => {
+  const eventId = req.query.eventId;
+  const BETS_URL = "https://api.sx.bet/trades";
+  const MARKETS_URL = "https://api.sx.bet/markets/find";
+  const MARKET_URL = `https://api.sx.bet/markets/active?eventId=${eventId}`;
+  const headers = process.env.SX_API_KEY
+    ? {
+        "X-Api-Key": process.env.SX_API_KEY,
+      }
+    : {};
+
+  const marketHashes = await axios
+    .get(MARKET_URL, { headers })
+    .then((res) => res.data.data.markets.map((market) => market.marketHash))
+    .catch((error) => ({ error }));
+
+  const bets_payload = {
+    settled: false,
+    maker: false,
+    tradeStatus: "SUCCESS",
+    marketHashes,
+  };
+
+  const bets = await axios
+    .post(BETS_URL, bets_payload, { headers })
+    .then((response) => response.data.data)
+    .catch((err) => ({ message: err, trades: [] }));
+
+  if (bets.trades.length) {
+    const marketHashes = Array.from(
+      new Set(bets.trades.map((bet) => bet.marketHash))
+    );
+
+    let all_markets = [];
+
+    for (let i = 0; i < Math.ceil(marketHashes.length / 50); i++) {
+      const market_payload = {
+        marketHashes: marketHashes.slice(i * 50, (i + 1) * 50),
+      };
+      const markets = await axios
+        .post(MARKETS_URL, market_payload, { headers })
+        .then((response) => response.data.data)
+        .catch((err) => ({ message: err }));
+
+      all_markets = [...all_markets, ...markets];
+    }
+
+    res.status(200).json(
+      bets.trades
+        .map((bet) => {
+          return {
+            ...bet,
+            market: all_markets.find(
+              (market) => market.marketHash === bet.marketHash
+            ),
+          };
+        })
+        .sort((a, b) => {
+          if (a.betTime > b.betTime) return -1;
+          if (a.betTime < b.betTime) return 1;
+        })
+    );
+  } else {
+    res.status(200).json(bets.trades);
+  }
+};
+
 const addUser = async (req, res) => {
   const { address } = req.body;
   await Users.query()
@@ -333,5 +400,6 @@ module.exports = {
   fetchStatsByBetTime,
   fetchStatsByOdds,
   fetchOpenBets,
+  fetchBetsByEvent,
   addUser,
 };
