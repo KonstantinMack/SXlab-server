@@ -6,6 +6,8 @@ const { SPORTS } = require("../util/globals");
 
 const sportArray = SPORTS.map((ele) => `'${ele}'`).join(", ");
 
+const MARKET_QUERY_LENGTH = 30;
+
 const fetchStatsByAddress = async (req, res) => {
   const sport = req.query.sport;
   const address = req.query.address;
@@ -278,12 +280,17 @@ const fetchOpenBets = async (req, res) => {
 
     let all_markets = [];
 
-    for (let i = 0; i < Math.ceil(marketHashes.length / 50); i++) {
-      const market_payload = {
-        marketHashes: marketHashes.slice(i * 50, (i + 1) * 50),
-      };
+    for (
+      let i = 0;
+      i < Math.ceil(marketHashes.length / MARKET_QUERY_LENGTH);
+      i++
+    ) {
+      const marketString = marketHashes
+        .slice(i * MARKET_QUERY_LENGTH, (i + 1) * MARKET_QUERY_LENGTH)
+        .join(",");
+
       const markets = await axios
-        .post(MARKETS_URL, market_payload, { headers })
+        .get(`${MARKETS_URL}?marketHashes=${marketString}`, { headers })
         .then((response) => response.data.data)
         .catch((err) => ({ message: err }));
 
@@ -335,7 +342,7 @@ const fetchBetsByEvent = async (req, res) => {
 
   const bets_payload = {
     settled: false,
-    maker: false,
+    // maker: false,
     tradeStatus: "SUCCESS",
     marketHashes,
   };
@@ -352,12 +359,17 @@ const fetchBetsByEvent = async (req, res) => {
 
     let all_markets = [];
 
-    for (let i = 0; i < Math.ceil(marketHashes.length / 50); i++) {
-      const market_payload = {
-        marketHashes: marketHashes.slice(i * 50, (i + 1) * 50),
-      };
+    for (
+      let i = 0;
+      i < Math.ceil(marketHashes.length / MARKET_QUERY_LENGTH);
+      i++
+    ) {
+      const marketString = marketHashes
+        .slice(i * MARKET_QUERY_LENGTH, (i + 1) * MARKET_QUERY_LENGTH)
+        .join(",");
+
       const markets = await axios
-        .post(MARKETS_URL, market_payload, { headers })
+        .get(`${MARKETS_URL}?marketHashes=${marketString}`, { headers })
         .then((response) => response.data.data)
         .catch((err) => ({ message: err }));
 

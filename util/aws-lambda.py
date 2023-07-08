@@ -331,18 +331,17 @@ def update_markets_table(new_bets):
     
     market_info = []
     failed_markets = []
-    
-    chunks = (len(new_markets) - 1) // 50 + 1
+    chunk_length = 30
+
+    chunks = (len(new_markets) - 1) // chunk_length + 1
     for i in range(chunks):
-        payload = {
-            "marketHashes": new_markets[i*50:(i+1)*50]
-        }
+        market_hashes_string = ",".join(new_markets[i*chunk_length:(i+1)*chunk_length])
         try:
-            data = requests.post(URLS['markets'], headers=HEADERS, json=payload).json()['data']
+            data = requests.get(f"{URLS['markets']}?marketHashes={market_hashes_string}", headers=HEADERS).json()['data']
             market_info.append(data)
 
         except:
-            failed_markets.append(new_markets[i*50:(i+1)*50])
+            failed_markets.append(new_markets[i*chunk_length:(i+1)*chunk_length])
     
     market_info_flat = [item for sublist in market_info for item in sublist]
     
