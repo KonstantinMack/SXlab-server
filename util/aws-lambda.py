@@ -208,10 +208,14 @@ QUERIES = {
 def get_date(stamp):
     return datetime.fromtimestamp(stamp).strftime("%Y/%m/%d")
 
-def fetch_existing_values(table, column):
-    query = f"SELECT {column} FROM {table}"
+def fetch_existing_values(table, column, values):
+    query = f"""SELECT {column} FROM {table} WHERE {column} IN ({", ".join([f"'{x}'" for x in values])})"""
     existing = pd.read_sql(query, con=engine)
     return set(existing[column])
+
+def create_query_string(query_params):
+    params = "&".join([f"{k}={v}" for k, v in query_params.items()])
+    return f"?{params}"
 
 ### Crypto prices
 
@@ -262,7 +266,7 @@ def update_crypto_prices_table():
 
 def update_sports_table():
     sports = requests.get(URLS["sports"], headers=HEADERS).json()['data']
-    exisiting_ids = fetch_existing_values("sports", "sportId")
+    exisiting_ids = fetch_existing_values("sports", "sportId", [x['sportId'] for x in sports])
     sports = [x for x in sports if x['sportId'] not in exisiting_ids]
     
     if sports:
@@ -275,7 +279,7 @@ def update_sports_table():
 
 def update_leagues_table():
     leagues = requests.get(URLS["leagues"], headers=HEADERS).json()['data']
-    exisiting_ids = fetch_existing_values("leagues", "leagueId")
+    exisiting_ids = fetch_existing_values("leagues", "leagueId", [x['leagueId'] for x in leagues])
     leagues = [x for x in leagues if x['leagueId'] not in exisiting_ids]
     
     if leagues:
@@ -287,24 +291,24 @@ def update_leagues_table():
 ### Bets
 
 def update_bets_table():
-    payload = {
+    query_params = {
         "pageSize": 300,
-        "settled": True,
+        "settled": "true",
         "startDate": CURRENT_TIME - OFFSET,
         }
     
     all_bets = []
-    data = requests.post(URLS['bets'], headers=HEADERS, json=payload).json()['data']
+    data = requests.get(f"{URLS['bets']}{create_query_string(query_params)}", headers=HEADERS).json()['data']
     all_bets.append(data['trades'])
     
     while data['trades']:
-        payload["paginationKey"] = data['nextKey']
-        data = requests.post(URLS['bets'], headers=HEADERS, json=payload).json()['data']
+        query_params["paginationKey"] = data['nextKey']
+        data = requests.get(f"{URLS['bets']}{create_query_string(query_params)}", headers=HEADERS).json()['data']
         all_bets.append(data['trades'])
         
     bets_list = [item for sublist in all_bets for item in sublist]
     
-    existing_ids = fetch_existing_values('bets', "_id")
+    existing_ids = fetch_existing_values('bets', "_id", [x['_id'] for x in bets_list])
     
     new_bets = [x for x in bets_list if x['_id'] not in existing_ids]
     
@@ -326,7 +330,7 @@ def update_bets_table():
 ### Markets
 
 def update_markets_table(new_bets):
-    existing_ids = fetch_existing_values("markets", "marketHash")
+    existing_ids = fetch_existing_values("markets", "marketHash", [x['marketHash'] for x in new_bets])
     new_markets = list(set([x['marketHash'] for x in new_bets if x['marketHash'] not in existing_ids]))
     
     market_info = []
