@@ -262,14 +262,11 @@ const fetchOpenBets = async (req, res) => {
         "X-Api-Key": process.env.SX_API_KEY,
       }
     : {};
-  const bets_payload = {
-    bettor: address,
-    settled: false,
-    tradeStatus: "SUCCESS",
-  };
+
+  const queryParams = `bettor=${address}&settled=false&tradeStatus=SUCCESS`;
 
   const bets = await axios
-    .post(BETS_URL, bets_payload, { headers })
+    .get(`${BETS_URL}?${queryParams}`, { headers })
     .then((response) => response.data.data)
     .catch((err) => ({ message: err, trades: [] }));
 
@@ -340,15 +337,12 @@ const fetchBetsByEvent = async (req, res) => {
     .then((res) => res.data.data.markets.map((market) => market.marketHash))
     .catch((error) => ({ error }));
 
-  const bets_payload = {
-    settled: false,
-    // maker: false,
-    tradeStatus: "SUCCESS",
-    marketHashes,
-  };
+  const queryParams = `settled=false&tradeStatus=SUCCESS&marketHashes=${marketHashes.join(
+    ","
+  )}`;
 
   const bets = await axios
-    .post(BETS_URL, bets_payload, { headers })
+    .get(`${BETS_URL}?${queryParams}`, { headers })
     .then((response) => response.data.data)
     .catch((err) => ({ message: err, trades: [] }));
 
