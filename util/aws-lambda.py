@@ -32,6 +32,7 @@ URLS = {
 }
 
 MARKET_TYPE_DICT = {
+    1: 'MONEY_LINE',
     52: 'MONEY_LINE',
     88: 'MONEY_LINE',
     226: 'MONEY_LINE',
@@ -53,7 +54,15 @@ MARKET_TYPE_DICT = {
     165: 'OVER_UNDER',
     53: 'SPREAD',
     63: 'MONEY_LINE',
-    77: 'OVER_UNDER'
+    64: 'SPREAD',
+    65: 'SPREAD',
+    66: 'SPREAD',
+    77: 'OVER_UNDER',
+    1618: 'MONEY_LINE',
+    236: 'OVER_UNDER',
+    21: 'OVER_UNDER',
+    45: 'OVER_UNDER',
+    46: 'OVER_UNDER'
 }
 
 QUERIES = {
@@ -68,12 +77,32 @@ QUERIES = {
           m.teamOneName, 
           m.teamTwoName,
           CASE
-            WHEN m.type IN ('52', '63', '88', '202', '203', '204', '205', '226', '274') THEN 'MONEY_LINE'
-            WHEN m.type IN ('2', '28', '29', '77', '165', '166', '835', '1536') THEN 'OVER_UNDER'
-            WHEN m.type IN ('3', '53', '201', '342', '866') THEN 'SPREAD'
+            WHEN m.type IN ('1', '52', '63', '88', '202', '203', '204', '205', '226', '274', '1618') THEN 'MONEY_LINE'
+            WHEN m.type IN ('2', '28', '29', '77', '165', '166', '835', '1536', '236', '21', '45', '46') THEN 'OVER_UNDER'
+            WHEN m.type IN ('3', '53', '201', '342', '866', '64', '65', '66') THEN 'SPREAD'
             ELSE m.type
           END as 'type',
             m.outcome,
+            CASE 
+                WHEN m.outcome = 0 THEN 0
+                WHEN m.outcome = 1 AND b.bettingOutcomeOne = 1 THEN 1
+                WHEN m.outcome = 2 AND b.bettingOutcomeOne = 0 THEN 1
+                ELSE 0
+            END as betWon,
+            CASE 
+                WHEN m.outcome = 0 THEN 1
+                ELSE 0
+            END as betPush,
+            CASE 
+                WHEN m.outcome = 0 THEN 0
+                WHEN m.outcome = 1 AND b.bettingOutcomeOne = 1 THEN 0
+                WHEN m.outcome = 2 AND b.bettingOutcomeOne = 0 THEN 0
+                ELSE 1
+            END as betLost,
+            CASE 
+                WHEN b.betTime > m.gameTime THEN 'inplay'
+                ELSE 'pregame'
+            END as inPlay,
             b.bettor,
             b.maker as isMaker,
             b.bettingOutcomeOne,
@@ -84,24 +113,24 @@ QUERIES = {
             b.stake / POWER(10, t.decimals) * COALESCE(cp.price, 1) as dollarStake,
           CASE
             WHEN m.outcome = 0 THEN 0
-            WHEN m.outcome = 1 AND b.bettingOutcomeOne = 1 THEN b.stake / POWER(10, t.decimals) * ((1 / (b.odds / POWER(10, 20)) - 1) * IF(b.maker, 0.98, 0.96))
-            WHEN m.outcome = 2 AND b.bettingOutcomeOne = 0 THEN b.stake / POWER(10, t.decimals) * ((1 / (b.odds / POWER(10, 20)) - 1) * IF(b.maker, 0.98, 0.96))
+            WHEN m.outcome = 1 AND b.bettingOutcomeOne = 1 THEN b.stake / POWER(10, t.decimals) * ((1 / (b.odds / POWER(10, 20)) - 1) * IF(b.maker, 0.99, 0.98))
+            WHEN m.outcome = 2 AND b.bettingOutcomeOne = 0 THEN b.stake / POWER(10, t.decimals) * ((1 / (b.odds / POWER(10, 20)) - 1) * IF(b.maker, 0.99, 0.98))
             ELSE -b.stake / POWER(10, t.decimals)
           END as unitProfitLoss,
           CASE
             WHEN m.outcome = 0 THEN 0
-            WHEN m.outcome = 1 AND b.bettingOutcomeOne = 1 THEN b.stake / POWER(10, t.decimals) * COALESCE(cp.price, 1) * ((1 / (b.odds / POWER(10, 20)) - 1) * IF(b.maker, 0.98, 0.96))
-            WHEN m.outcome = 2 AND b.bettingOutcomeOne = 0 THEN b.stake / POWER(10, t.decimals) * COALESCE(cp.price, 1) * ((1 / (b.odds / POWER(10, 20)) - 1) * IF(b.maker, 0.98, 0.96))
+            WHEN m.outcome = 1 AND b.bettingOutcomeOne = 1 THEN b.stake / POWER(10, t.decimals) * COALESCE(cp.price, 1) * ((1 / (b.odds / POWER(10, 20)) - 1) * IF(b.maker, 0.99, 0.98))
+            WHEN m.outcome = 2 AND b.bettingOutcomeOne = 0 THEN b.stake / POWER(10, t.decimals) * COALESCE(cp.price, 1) * ((1 / (b.odds / POWER(10, 20)) - 1) * IF(b.maker, 0.99, 0.98))
             ELSE -b.stake / POWER(10, t.decimals) * COALESCE(cp.price, 1)
           END as dollarProfitLoss,
           CASE
-            WHEN m.outcome = 1 AND b.bettingOutcomeOne = 1 THEN b.stake / POWER(10, t.decimals) * ((1 / (b.odds / POWER(10, 20)) - 1) * IF(b.maker, 0.02, 0.04))
-            WHEN m.outcome = 2 AND b.bettingOutcomeOne = 0 THEN b.stake / POWER(10, t.decimals) * ((1 / (b.odds / POWER(10, 20)) - 1) * IF(b.maker, 0.02, 0.04))
+            WHEN m.outcome = 1 AND b.bettingOutcomeOne = 1 THEN b.stake / POWER(10, t.decimals) * ((1 / (b.odds / POWER(10, 20)) - 1) * IF(b.maker, 0.01, 0.02))
+            WHEN m.outcome = 2 AND b.bettingOutcomeOne = 0 THEN b.stake / POWER(10, t.decimals) * ((1 / (b.odds / POWER(10, 20)) - 1) * IF(b.maker, 0.01, 0.02))
             ELSE 0
           END as unitFees,
           CASE
-            WHEN m.outcome = 1 AND b.bettingOutcomeOne = 1 THEN b.stake / POWER(10, t.decimals) * COALESCE(cp.price, 1) * ((1 / (b.odds / POWER(10, 20)) - 1) * IF(b.maker, 0.02, 0.04))
-            WHEN m.outcome = 2 AND b.bettingOutcomeOne = 0 THEN b.stake / POWER(10, t.decimals) * COALESCE(cp.price, 1) * ((1 / (b.odds / POWER(10, 20)) - 1) * IF(b.maker, 0.02, 0.04))
+            WHEN m.outcome = 1 AND b.bettingOutcomeOne = 1 THEN b.stake / POWER(10, t.decimals) * COALESCE(cp.price, 1) * ((1 / (b.odds / POWER(10, 20)) - 1) * IF(b.maker, 0.01, 0.02))
+            WHEN m.outcome = 2 AND b.bettingOutcomeOne = 0 THEN b.stake / POWER(10, t.decimals) * COALESCE(cp.price, 1) * ((1 / (b.odds / POWER(10, 20)) - 1) * IF(b.maker, 0.01, 0.02))
             ELSE 0
           END as dollarFees,
           b.date as betDate
@@ -205,6 +234,14 @@ QUERIES = {
     """
 }
 
+STATS_TABLES = {
+    "stats_overall": ['token', 'sports', 'league', 'numberOfBets', 'avgDollarBetSize', 'totalDollarMatched', 'totalDollarFees', 'totalUnitFees'],
+    "stats_by_sports": ['sports', 'numUniqAddresses', 'numMarkets'],
+    "stats_by_markets":['sports', 'league', 'gameTime', 'numberOfBets', 'totalVolumeMatched', 'totalDollarFees'],
+    "stats_time_series": ['year', 'month', 'sports', 'token', 'numberOfAddresses', 'numberOfBets', 'totalDollarMatched', 'avgDollarBetSize', 'totalDollarFees', 'totalUnitFees'],
+    "stats_tipsters": ['bettor', 'numBets', 'dollarStake', 'dollarProfitLoss', 'yield', 'winningPerc', 'isMaker', 'avgOdds']
+}
+
 def get_date(stamp):
     return datetime.fromtimestamp(stamp).strftime("%Y/%m/%d")
 
@@ -260,7 +297,6 @@ def update_crypto_prices_table():
         
     else:
         print(f"No new crypto prices to add")
-    
 
 ### Sports
 
@@ -291,6 +327,7 @@ def update_leagues_table():
 ### Bets
 
 def update_bets_table():
+    BETS_NON_NULL_COLS = ['baseToken', 'bettor', 'stake', 'odds', 'marketHash', 'maker', 'betTime', 'settled', 'bettingOutcomeOne', 'outcome', 'date']
     query_params = {
         "pageSize": 300,
         "settled": "true",
@@ -318,9 +355,14 @@ def update_bets_table():
         new_bets_df.drop_duplicates(subset=['_id'])
         new_bets_df["date"] = new_bets_df.betTime.apply(get_date)
         bets_cols = "_id baseToken bettor stake odds orderHash marketHash maker betTime settled settleValue bettingOutcomeOne fillHash tradeStatus valid outcome settleDate date".split()
-        new_bets_df[bets_cols].to_sql("bets", con=engine, if_exists="append", index=False)
+        new_bets_df = new_bets_df[bets_cols].copy()
+        filtered_bets = new_bets_df.dropna(subset=BETS_NON_NULL_COLS).copy()
+        filtered_bets.to_sql("bets", con=engine, if_exists="append", index=False)
         
-        print(f"Added {new_bets_df.shape[0]} bets")
+        print(f"Added {filtered_bets.shape[0]} bets")
+        
+        if new_bets_df.shape[0] > filtered_bets.shape[0]:
+            print(f"Filtered out {new_bets_df.shape[0] - filtered_bets.shape[0]} bets due to NULL values")
         
     else:
         print("No new bets to add")
@@ -330,6 +372,7 @@ def update_bets_table():
 ### Markets
 
 def update_markets_table(new_bets):
+    MARKETS_NON_NULL_COLS = ['marketHash', 'outcomeOneName', 'outcomeTwoName', 'outcomeVoidName', 'gameTime', 'outcome', 'sportId', 'leagueId']
     existing_ids = fetch_existing_values("markets", "marketHash", [x['marketHash'] for x in new_bets])
     new_markets = list(set([x['marketHash'] for x in new_bets if x['marketHash'] not in existing_ids]))
     
@@ -355,16 +398,21 @@ def update_markets_table(new_bets):
         market_df['type'] = market_df['type'].replace(MARKET_TYPE_DICT)
         market_cols = pd.read_sql("SELECT * FROM markets LIMIT 1", con=engine).columns[:-1]
         market_cols = list(set(market_cols).intersection(set(market_df.columns)))
-        market_df[market_cols].to_sql("markets", con=engine, if_exists="append", index=False)
+        market_df = market_df[market_cols].copy()
+        filtered_market_df = market_df.dropna(subset=MARKETS_NON_NULL_COLS).copy()
+        filtered_market_df.to_sql("markets", con=engine, if_exists="append", index=False)
         print(f"Added {market_df.shape[0]} markets")
+        
+        if market_df.shape[0] > filtered_market_df.shape[0]:
+            print(f"Filtered out {market_df.shape[0] - filtered_market_df.shape[0]} markets due to NULL values")
+        
         if failed_markets:
             print("There were errors fetching markets")
 
     else:
         print("No markets to add")
         if failed_markets:
-            print("There were errors fetching markets")
-            
+            print("There were errors fetching markets") 
 
 def update_basic_tables():
     update_crypto_prices_table()
@@ -375,15 +423,23 @@ def update_basic_tables():
         update_markets_table(new_bets)
 
 def update_derived_tables():
+    DETAILS_NON_NULL_COLS = ['sports', 'league', 'marketHash', 'betTime', 'gameTime', 'outcome', 'betWon', 'betPush', 'betLost', 'inPlay', 'bettor', 'isMaker', 
+                             'bettingOutcomeOne', 'decimalOdds', 'token', 'price', 'unitStake', 'dollarStake', 'unitProfitLoss', 'dollarProfitLoss', 'unitFees', 
+                             'dollarFees', 'betDate']
     bet_details = pd.read_sql(QUERIES['bet_details'], con=engine)
-    new_bets = bet_details.to_sql("bet_details", con=engine, if_exists="append", index=False)
+    filtered_bet_details = bet_details.dropna(subset=DETAILS_NON_NULL_COLS).copy()
+    new_bets = filtered_bet_details.to_sql("bet_details", con=engine, if_exists="append", index=False)
     print(f"Added {new_bets} bets with details")
     
+    if bet_details.shape[0] > new_bets:
+        print(f"Filtered out {bet_details.shape[0] - new_bets} due to NULL values")
+    
     if new_bets:
-        for stat_table in ["stats_overall", "stats_by_sports", "stats_by_markets", "stats_time_series", "stats_tipsters"]:
+        for stat_table, non_null_cols in STATS_TABLES.items():
             stats = pd.read_sql(QUERIES[stat_table], con=engine)
             with engine.connect() as connection:
                 connection.execute(f"TRUNCATE {stat_table}")
+            stats.dropna(subset=non_null_cols, inplace=True)
             new_stats_rows = stats.to_sql(stat_table, con=engine, if_exists="append",  index=False)
             print(f"Added {new_stats_rows} rows to {stat_table}")
             
