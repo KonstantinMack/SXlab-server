@@ -218,19 +218,40 @@ QUERIES = {
         GROUP BY YEAR(betDate), MONTH(betDate), sports, token
     """,
     "stats_tipsters": """
-        SELECT 
-            bettor, 
-            COUNT(*) as numBets, 
-            ROUND(SUM(dollarStake)) as dollarStake, 
-            ROUND(SUM(dollarProfitLoss)) as dollarProfitLoss, 
+        SELECT
+            CASE 
+                WHEN sports IN ('Baseball', 'Basketball', 'Crypto', 'E Sports', 'Football',
+                                'Hockey', 'Mixed Martial Arts', 'Racing', 'Soccer', 'Tennis') 
+                THEN sports
+                ELSE 'Other'
+            END AS sport,
+            bettor,
+            COUNT(*) as numBets,
+            ROUND(SUM(dollarStake)) as dollarStake,
+            ROUND(SUM(dollarProfitLoss)) as dollarProfitLoss,
             ROUND(SUM(dollarProfitLoss) * 100 / SUM(dollarStake), 2) as yield,
-            ROUND(SUM(IF(dollarProfitLoss > 0, 1, 0)) / SUM(IF(dollarProfitLoss != 0, 1, 0)) * 100) as winningPerc,
-            ROUND(AVG(isMaker), 2) as isMaker, 
+            ROUND(SUM(betWon) / SUM(betWon + betLost) * 100) as winningPerc,
+            ROUND(AVG(isMaker), 2) as isMaker,
             ROUND(AVG(decimalOdds), 2) as avgOdds
         FROM bet_details
-        GROUP BY bettor
-        HAVING numBets > 100
-        ORDER BY SUM(dollarProfitLoss) DESC
+        GROUP BY sport, bettor
+        HAVING numBets >= 100
+
+        UNION ALL
+
+        SELECT
+            'All' AS sport,
+            bettor,
+            COUNT(*) as numBets,
+            ROUND(SUM(dollarStake)) as dollarStake,
+            ROUND(SUM(dollarProfitLoss)) as dollarProfitLoss,
+            ROUND(SUM(dollarProfitLoss) * 100 / SUM(dollarStake), 2) as yield,
+            ROUND(SUM(betWon) / SUM(betWon + betLost) * 100) as winningPerc,
+            ROUND(AVG(isMaker), 2) as isMaker,
+            ROUND(AVG(decimalOdds), 2) as avgOdds
+        FROM bet_details
+        GROUP BY sport, bettor
+        HAVING numBets >= 100
     """
 }
 
