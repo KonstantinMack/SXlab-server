@@ -2,6 +2,7 @@ require("dotenv").config();
 const BetDetails = require("../models/BetDetails");
 const Favourites = require("../models/Favourites");
 const StatsTipsters = require("../models/StatsTipsters");
+const Telegram = require("../models/Telegram");
 const { SPORTS } = require("../util/globals");
 
 const sportArray = SPORTS.map((ele) => `'${ele}'`).join(", ");
@@ -43,9 +44,26 @@ const fetchFavourites = async (req, res) => {
   res.status(200).json(favourites.map((fav) => fav.bettor));
 };
 
+const isTgSubbed = async (req, res) => {
+  const address = req.query.address;
+  const subs = await Telegram.query().where("clerkId", "=", address);
+  res.status(200).json(!!subs.length);
+};
+
+const unsubTg = async (req, res) => {
+  const { address } = req.body;
+  await Telegram.query()
+    .delete()
+    .where("clerkId", "=", address)
+    .then((deletedEntries) => res.status(201).json({ deletedEntries }))
+    .catch((error) => res.status(400).json({ error }));
+};
+
 module.exports = {
   fetchTipsters,
   starTipster,
   unstarTipster,
   fetchFavourites,
+  isTgSubbed,
+  unsubTg,
 };
