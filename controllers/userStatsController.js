@@ -2,7 +2,9 @@ require("dotenv").config();
 const axios = require("axios");
 const BetDetails = require("../models/BetDetails");
 const Users = require("../models/Users");
+const Markets = require("../models/Markets");
 const { SPORTS } = require("../util/globals");
+const knex = require("knex");
 
 const sportArray = SPORTS.map((ele) => `'${ele}'`).join(", ");
 
@@ -398,6 +400,46 @@ const addUser = async (req, res) => {
     .catch((err) => res.status(400).json({ error: "User already exists" }));
 };
 
+const fetchBetHistory = async (req, res) => {
+  const address = req.query.address;
+
+  const betHistory = await BetDetails.query()
+    .table("bet_details as b")
+    .where("bettor", address)
+    .join("markets as m", "b.marketHash", "=", "m.marketHash")
+    .select(
+      "b._id",
+      "b.bettor",
+      "b.betTime",
+      "b.marketHash",
+      "b.gameTime",
+      "b.sports",
+      "b.league",
+      "b.teamOneName",
+      "b.teamTwoName",
+      "m.outcomeOneName",
+      "m.outcomeTwoName",
+      "b.type",
+      "m.line",
+      "b.bettingOutcomeOne",
+      "b.outcome",
+      "m.teamOneScore",
+      "m.teamTwoScore",
+      "m.homeTeamFirst",
+      "b.isMaker",
+      "b.token",
+      "b.price as tokenPrice",
+      "b.unitStake",
+      "b.dollarStake",
+      "b.decimalOdds",
+      "b.unitProfitLoss",
+      "b.dollarProfitLoss",
+      "b.dollarFees"
+    );
+
+  res.status(200).json(betHistory);
+};
+
 module.exports = {
   fetchStatsByAddress,
   fetchTypeStatsByAddress,
@@ -407,5 +449,6 @@ module.exports = {
   fetchStatsByOdds,
   fetchOpenBets,
   fetchBetsByEvent,
+  fetchBetHistory,
   addUser,
 };

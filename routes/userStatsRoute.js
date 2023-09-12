@@ -23,6 +23,8 @@ router
   .route("/address/stats-by-odds")
   .get(userStatsController.fetchStatsByOdds);
 
+router.route("/address/bet-history").get(userStatsController.fetchBetHistory);
+
 router.route("/address/bets").get(userStatsController.fetchOpenBets);
 
 router.route("/bet-finder/bets").get(userStatsController.fetchBetsByEvent);
